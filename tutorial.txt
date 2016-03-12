@@ -1,0 +1,47 @@
+
+## new config data
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
+SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
+
+##
+from app import db
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key = True)
+    nickname = db.Column(db.String(64), index = True, unique = True)
+    email = db.Column(db.String(120), index = True, unique = True)
+
+    def __repr__(self):
+        return '<User %r>' % (self.nickname)
+
+##  现在让我们提交一篇 blog:
+>>> import datetime
+>>> u = models.User.query.get(1)
+>>> p = models.Post(body='my first post!', timestamp=datetime.datetime.utcnow(), author=u)
+>>> db.session.add(p)
+>>> db.session.commit()
+# 你可能注意到了我们并没有设置 user_id 字段。相反我们在 author 字段上存储了一个 User 对象。ORM 层将会知道怎么完成 user_id 字段。
+
+#  get all posts from a user
+>>> u = models.User.query.get(1)
+>>> print u
+<User u'john'>
+>>> posts = u.posts.all()
+>>> print posts
+
+# 在结束之前，需要清除一下刚才创建的数据，以便在下一章中会有一个干净的数据库:
+
+>>> users = models.User.query.all()
+>>> for u in users:
+...     db.session.delete(u)
+...
+>>> posts = models.Post.query.all()
+>>> for p in posts:
+...     db.session.delete(p)
+...
+>>> db.session.commit()
+
+### 
